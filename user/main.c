@@ -9,12 +9,15 @@
 按键1:  PE4	按下低电平
 LED3：	PB5 低电平亮 ——推挽模式
 
-问题：EXTI机制的按键检测是否需要防抖机制？
-
+问题：
+1. EXTI机制的按键检测是否需要防抖机制？存在EXTI模式下按键抖动造成多次进入中断。不能中断就近处理，需要在任务中消抖。
+2. 串口发送debug，可以使用while循环检测TXE标记发送，也可以按字节使用串口中断发送，需要提前将发送数据放入队列，注意控制TXE中断屏蔽与使能。
+若使用printf来向串口发送调试信息，则需要禁止半主机模式，重写putc接口，并取消microLib微库的使用。
 
 */
 
 #define LED_N0_BLOCK_PROC
+#define DEBUG		//usart2 printf, no use microLib
 
 typedef struct UART_RecvInfo
 {
@@ -22,8 +25,6 @@ typedef struct UART_RecvInfo
 	uint8_t len;				//任务读取后要清零
 	uint8_t complete;			//0-recv info incomplete 1-recv complete(with \r\n) 中断中SET，任务中读取后RESET
 }UART_recv_t;
-
-
 
 
 uint32_t press_times;
@@ -73,6 +74,32 @@ static void debug_uart_init(void)
 	NVIC_Init(&nvic_initStruct);
 }
 
+#ifdef DEBUG
+#include "stdio.h"		//for printf
+
+//以下代码,支持printf函数,而不需要选择use MicroLIB	  
+#pragma import(__use_no_semihosting)             
+//标准库需要的支持函数                 
+struct __FILE 
+{ 
+	int handle; 
+}; 
+
+FILE __stdout;       
+//定义_sys_exit()以避免使用半主机模式    
+_sys_exit(int x) 
+{ 
+	x = x; 
+} 
+//重定义fputc函数 
+int fputc(int ch, FILE *f)
+{ 	
+	while((USART2->SR&0X40)==0);//循环发送,直到发送完毕   
+	USART2->DR = (u8) ch;      
+	return ch;
+}
+#else
+
 //参数：待打印的字符数组（\0结尾），此接口会占用较长时间发送数据，若数据不以\0结束则无法退出，谨慎使用。
 static void debug(uint8_t *str)
 {
@@ -86,6 +113,8 @@ static void debug(uint8_t *str)
 	}
 	while (USART_GetFlagStatus(USART2, USART_FLAG_TC) == RESET){}
 }
+
+#endif
 
 static void LED_init(void)
 {
@@ -172,7 +201,7 @@ static void key_detect_proc(void)
 	}
 	else
 	{
-		;	//松手动作逻辑
+		;	//松手动作逻辑(若使用该逻辑，需要同时修改EXTI的触发为松手电平边沿类型)
 	}
 	key_event = RESET;
 	
@@ -215,7 +244,8 @@ int main()
 	key_exti_nvic_config();		//key nvic config
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
 	memset(&uart_recv_info, 0, sizeof(uart_recv_info));
-	debug("init over");
+	//debug("init over");
+	printf("Initualise finished\n");
 	while(1)
 	{
 		//debug print最好不要在任务中使用，因为会发送过程会使得任务执行时间过长
@@ -262,4 +292,5 @@ void USART2_IRQHandler(void)
 		}
 	}
 }
+
 
