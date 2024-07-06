@@ -1,6 +1,7 @@
 #include "stm32f10x.h"
 #include "string.h"
 #include "stm32f10x_pal.h"
+#include "timer.h"
 //按键切换灯泡闪烁快慢：0-慢闪、1-正常速度、2-快闪
 /*
 使用裸机多任务编程结构，按键监测和LED闪烁各一个任务Proc
@@ -172,14 +173,14 @@ static void led_blink_proc(void)
 {	
 #ifndef LED_N0_BLOCK_PROC
 	GPIO_ResetBits(GPIOB, GPIO_Pin_5);
-	PAL_Delay(LED_blink_speed);
+	TIMER_Delay(LED_blink_speed);
 	GPIO_SetBits(GPIOB, GPIO_Pin_5);
-	PAL_Delay(LED_blink_speed);
+	TIMER_Delay(LED_blink_speed);
 #else
 	//static 	uint64_t led_event_ticks;		//下一次切换状态的时机ticks（电平保持期间，led_event_ticks略大于systick）
-	if (led_event_ticks <= PAL_GetTick())	//一旦systick >= led_event_ticks时，表示延迟已结束
+	if (led_event_ticks <= TIMER_GetTick())	//一旦systick >= led_event_ticks时，表示延迟已结束
 	{
-		led_event_ticks = PAL_GetTick() + LED_blink_speed;		//再向后推迟一段时间（更新led_event_ticks）
+		led_event_ticks = TIMER_GetTick() + LED_blink_speed;		//再向后推迟一段时间（更新led_event_ticks）
 		LED_trigger();
 	}
 #endif
@@ -192,7 +193,7 @@ static void key_detect_proc(void)
 	if (key_event == RESET)
 		return;
 	
-	PAL_Delay(5);		//按键消抖
+	TIMER_Delay(5);		//按键消抖
 	key_level = GPIO_ReadInputDataBit(GPIOE, GPIO_Pin_4);
 	if (key_level == RESET)
 	{
@@ -242,10 +243,11 @@ int main()
 	key_init();
 	exti_init();
 	key_exti_nvic_config();		//key nvic config
+	APP_Timer_init();			//Period:1ms, prescaler:1us
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
 	memset(&uart_recv_info, 0, sizeof(uart_recv_info));
 	//debug("init over");
-	printf("Initualise finished\n");
+	printf("Initualiize finished\n");
 	while(1)
 	{
 		//debug print最好不要在任务中使用，因为会发送过程会使得任务执行时间过长
