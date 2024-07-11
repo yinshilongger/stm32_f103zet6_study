@@ -233,6 +233,12 @@ static void uart_recv_detect(void)
 	}	
 }
 
+void set_led_breath(void)
+{
+	float second = TIMER_GetTick() * 0.001;
+	float duty = 0.5 + 0.5*sin(0.6*3.14*second);		//duty:between 0-1
+	TIM_SetCompare2(TIM1, 999*duty);				//之所以不写1000而写999的原因是：虽然周期是1000，但是如果duty是1，那么装载CCR中的值就大于ARR了。
+}
 
 int main()
 {
@@ -254,6 +260,8 @@ int main()
 		led_blink_proc();		
 		key_detect_proc();
 		uart_recv_detect();
+		set_led_breath();
+
 	}
 	
 	return 0;
