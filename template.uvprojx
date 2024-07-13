@@ -403,6 +403,46 @@
               <FileType>1</FileType>
               <FilePath>.\user\stm32f10x_it.c</FilePath>
             </File>
+            <File>
+              <FileName>debug.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\user\debug.c</FilePath>
+            </File>
+            <File>
+              <FileName>debug.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\user\debug.h</FilePath>
+            </File>
+            <File>
+              <FileName>communication.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\user\communication.c</FilePath>
+            </File>
+            <File>
+              <FileName>communication.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\user\communication.h</FilePath>
+            </File>
+            <File>
+              <FileName>led.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\user\led.c</FilePath>
+            </File>
+            <File>
+              <FileName>led.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\user\led.h</FilePath>
+            </File>
+            <File>
+              <FileName>button.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\user\button.c</FilePath>
+            </File>
+            <File>
+              <FileName>button.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\user\button.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

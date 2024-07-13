@@ -158,11 +158,22 @@ void SysTick_Handler(void)
 {
 }*/
 
-extern void PAL_Systick_IRQHandler(void);
+extern void COMUNICATION_RECV_IRQHandler(void);
+extern void Button_IRQHandler(void);
 
 void SysTick_Handler(void)
 {
 	PAL_Systick_IRQHandler();
+}
+
+void USART2_IRQHandler(void)
+{
+	COMUNICATION_RECV_IRQHandler();
+}
+
+void EXTI4_IRQHandler(void)
+{
+	Button_IRQHandler();
 }
 
 /**
