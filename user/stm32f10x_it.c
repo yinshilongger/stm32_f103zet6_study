@@ -160,6 +160,9 @@ void SysTick_Handler(void)
 
 extern void COMUNICATION_RECV_IRQHandler(void);
 extern void Button_IRQHandler(void);
+extern void PAL_Systick_IRQHandler(void);
+extern void APP_TIM1_CC_IRQHandler(void);
+extern void APP_TIM1_UP_IRQHandler(void);
 
 void SysTick_Handler(void)
 {
@@ -174,6 +177,16 @@ void USART2_IRQHandler(void)
 void EXTI4_IRQHandler(void)
 {
 	Button_IRQHandler();
+}
+
+void TIM1_CC_IRQHandler(void)
+{
+	APP_TIM1_CC_IRQHandler();
+}
+
+void TIM1_UP_IRQHandler(void)
+{
+	APP_TIM1_UP_IRQHandler();
 }
 
 /**

@@ -5,6 +5,7 @@
 #include "communication.h"
 #include "button.h"
 #include "led.h"
+#include "timer_driver.h"
 //按键切换灯泡闪烁快慢：0-慢闪、1-正常速度、2-快闪
 /*
 使用裸机多任务编程结构，按键监测和LED闪烁各一个任务Proc
@@ -36,6 +37,7 @@ int main()
 	PAL_Init();				//for systick
 	periph_clock_init();
 	debug_uart_init();
+	APP_Timer_init();
 	LED_init();
 	Button_init();
 	
@@ -45,9 +47,10 @@ int main()
 	while(1)
 	{
 		//debug print最好不要在任务中使用，因为会发送过程会使得任务执行时间过长
-		led_blink_proc();		
+		led_blink_proc();			//控制LED闪烁的线程：闪烁加速、闪烁减速、暂停闪烁、恢复闪烁
 		Button_detect_proc();
 		uart_recv_detect_proc();
+		Timer_OC_breath_led_proc();	//输出比较控制呼吸灯效果
 	}
 	
 	return 0;
