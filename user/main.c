@@ -6,6 +6,7 @@
 #include "button.h"
 #include "led.h"
 #include "timer_driver.h"
+
 //按键切换灯泡闪烁快慢：0-慢闪、1-正常速度、2-快闪
 /*
 使用裸机多任务编程结构，按键监测和LED闪烁各一个任务Proc
@@ -29,8 +30,12 @@ static void periph_clock_init(void)
 	//RCC_APB2PeriphClockCmd(RCC_APB1ENR_TIM2EN, ENABLE);			
 }
 
-
-
+void set_led_breath(void)
+{
+	float second = TIMER_GetTick() * 0.001;
+	float duty = 0.5 + 0.5*sin(0.6*3.14*second);		//duty:between 0-1
+	TIM_SetCompare2(TIM1, 999*duty);				//之所以不写1000而写999的原因是：虽然周期是1000，但是如果duty是1，那么装载CCR中的值就大于ARR了。
+}
 
 int main()
 {
@@ -40,10 +45,10 @@ int main()
 	APP_Timer_init();
 	LED_init();
 	Button_init();
-	
+
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
 	//debug("init over");
-	printf("Initualise finished\n");
+	printf("Initualiize finished\n");
 	while(1)
 	{
 		//debug print最好不要在任务中使用，因为会发送过程会使得任务执行时间过长
